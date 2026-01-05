@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Dompet Pintar - Dark Mode</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              darkbg: "#0f172a",
+              darkcard: "#1e293b",
+              darkinput: "#334155",
+            },
+          },
+        },
+      };
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Custom Scrollbar for clean look */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 text-slate-800 dark:bg-darkbg dark:text-slate-200 transition-colors duration-300 min-h-screen pb-24"
+  >
+    <header
+      class="relative bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-slate-800 dark:to-slate-900 text-white pt-8 pb-20 px-6 rounded-b-[2.5rem] shadow-xl z-10 transition-colors duration-300"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-wallet text-blue-200 text-xl"></i>
+          <h1 class="text-lg font-bold tracking-tight">Dompet Pintar</h1>
+        </div>
+        <div class="flex gap-3">
+          <button
+            onclick="toggleDarkMode()"
+            class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+          >
+            <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+          </button>
+          <button
+            onclick="resetData()"
+            class="bg-red-500/80 hover:bg-red-500 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg shadow-red-500/20"
+          >
+            <i class="fa-solid fa-rotate-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <p
+          class="text-blue-100 text-xs font-medium uppercase tracking-wider opacity-80"
+        >
+          Sisa Saldo Kamu
+        </p>
+        <h2
+          id="totalBalance"
+          class="text-4xl font-extrabold mt-2 mb-6 drop-shadow-sm"
+        >
+          Rp 0
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div
+          class="bg-white/10 backdrop-blur-sm border border-white/10 p-3 rounded-2xl"
+        >
+          <div class="flex items-center gap-2 mb-1">
+            <div
+              class="w-6 h-6 rounded-full bg-red-400/20 flex items-center justify-center text-red-200 text-xs"
+            >
+              <i class="fa-solid fa-arrow-trend-down"></i>
+            </div>
+            <span class="text-[10px] text-blue-100 uppercase font-bold"
+              >Minggu Ini</span
+            >
+          </div>
+          <p id="expenseWeek" class="text-lg font-bold">Rp 0</p>
+        </div>
+        <div
+          class="bg-white/10 backdrop-blur-sm border border-white/10 p-3 rounded-2xl"
+        >
+          <div class="flex items-center gap-2 mb-1">
+            <div
+              class="w-6 h-6 rounded-full bg-orange-400/20 flex items-center justify-center text-orange-200 text-xs"
+            >
+              <i class="fa-solid fa-calendar"></i>
+            </div>
+            <span class="text-[10px] text-blue-100 uppercase font-bold"
+              >Bulan Ini</span
+            >
+          </div>
+          <p id="expenseMonth" class="text-lg font-bold">Rp 0</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-5 -mt-12 relative z-20">
+      <div
+        class="bg-white dark:bg-darkcard rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300"
+      >
+        <div class="p-2">
+          <div class="bg-slate-100 dark:bg-darkinput rounded-xl p-1 flex">
+            <button
+              onclick="switchTab('expense')"
+              id="tabExpense"
+              class="flex-1 py-3 rounded-lg text-sm font-bold shadow-sm bg-white dark:bg-slate-600 text-red-500 transition-all duration-300"
+            >
+              Pengeluaran
+            </button>
+            <button
+              onclick="switchTab('income')"
+              id="tabIncome"
+              class="flex-1 py-3 rounded-lg text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all duration-300"
+            >
+              Pemasukan
+            </button>
+          </div>
+        </div>
+
+        <div class="p-5 pt-2">
+          <div id="formExpense" class="fade-in space-y-4">
+            <div class="relative group">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-tag text-slate-400 group-focus-within:text-red-500 transition-colors"
+                ></i>
+              </div>
+              <input
+                type="text"
+                id="expName"
+                placeholder="Nama Barang (Contoh: Kopi)"
+                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
+              />
+            </div>
+
+            <div class="relative group">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-layer-group text-slate-400 group-focus-within:text-red-500 transition-colors"
+                ></i>
+              </div>
+              <select
+                id="expCategory"
+                class="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm appearance-none cursor-pointer"
+              >
+                <option value="" disabled selected>Pilih Kategori...</option>
+                <option value="Makanan">🍔 Makanan & Minuman</option>
+                <option value="Transportasi">🛵 Transportasi</option>
+                <option value="Belanja">🛒 Belanja Bulanan</option>
+                <option value="Tagihan">⚡ Tagihan & Listrik</option>
+                <option value="Hiburan">🎬 Hiburan</option>
+                <option value="Investasi">📈 Investasi</option>
+                <option value="Lainnya">📦 Lainnya (Other)</option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"
+              >
+                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+              </div>
+            </div>
+
+            <div class="relative group">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <span
+                  class="text-slate-400 font-bold text-sm group-focus-within:text-red-500 transition-colors"
+                  >Rp</span
+                >
+              </div>
+              <input
+                type="number"
+                id="expAmount"
+                placeholder="0"
+                inputmode="numeric"
+                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
+              />
+            </div>
+
+            <button
+              onclick="submitExpense()"
+              class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
+            >
+              <i class="fa-solid fa-plus"></i> Catat Pengeluaran
+            </button>
+          </div>
+
+          <div id="formIncome" class="hidden fade-in space-y-4">
+            <div class="relative group">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-hand-holding-dollar text-slate-400 group-focus-within:text-green-500 transition-colors"
+                ></i>
+              </div>
+              <input
+                type="text"
+                id="incSource"
+                placeholder="Sumber Dana (Gaji, Bonus)"
+                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
+              />
+            </div>
+
+            <div class="relative group">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <span
+                  class="text-slate-400 font-bold text-sm group-focus-within:text-green-500 transition-colors"
+                  >Rp</span
+                >
+              </div>
+              <input
+                type="number"
+                id="incAmount"
+                placeholder="0"
+                inputmode="numeric"
+                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
+              />
+            </div>
+
+            <button
+              onclick="submitIncome()"
+              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
+            >
+              <i class="fa-solid fa-download"></i> Catat Pemasukan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 mb-4 flex justify-between items-end px-2">
+        <h3
+          class="font-bold text-slate-700 dark:text-slate-300 text-sm tracking-wide uppercase"
+        >
+          Riwayat Transaksi
+        </h3>
+      </div>
+
+      <div id="transactionList" class="space-y-3 pb-8"></div>
+    </main>
+
+    <script>
+      // --- DARK MODE LOGIC ---
+      const themeIcon = document.getElementById("themeIcon");
+
+      // Cek LocalStorage saat load
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+        themeIcon.classList.remove("fa-moon");
+        themeIcon.classList.add("fa-sun");
+      } else {
+        document.documentElement.classList.remove("dark");
+        themeIcon.classList.remove("fa-sun");
+        themeIcon.classList.add("fa-moon");
+      }
+
+      function toggleDarkMode() {
+        if (document.documentElement.classList.contains("dark")) {
+          document.documentElement.classList.remove("dark");
+          localStorage.theme = "light";
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.add("fa-moon");
+        } else {
+          document.documentElement.classList.add("dark");
+          localStorage.theme = "dark";
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+        }
+      }
+
+      // --- APP LOGIC (Sama seperti sebelumnya dengan styling update) ---
+      const STORAGE_KEY = "cashflow_data_v2_dark"; // Ganti key biar fresh
+      let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+      function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+        renderDashboard();
+        renderList();
+      }
+
+      function switchTab(type) {
+        const expenseBtn = document.getElementById("tabExpense");
+        const incomeBtn = document.getElementById("tabIncome");
+        const expenseForm = document.getElementById("formExpense");
+        const incomeForm = document.getElementById("formIncome");
+
+        // Style Classes
+        const activeClass = "shadow-sm bg-white dark:bg-slate-600";
+        const inactiveClass =
+          "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+
+        if (type === "expense") {
+          expenseBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-red-500 ${activeClass}`;
+          incomeBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactiveClass}`;
+          expenseForm.classList.remove("hidden");
+          incomeForm.classList.add("hidden");
+        } else {
+          expenseBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactiveClass}`;
+          incomeBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-green-500 ${activeClass}`;
+          expenseForm.classList.add("hidden");
+          incomeForm.classList.remove("hidden");
+        }
+      }
+
+      function submitExpense() {
+        const name = document.getElementById("expName").value;
+        const category = document.getElementById("expCategory").value;
+        const amount = document.getElementById("expAmount").value;
+
+        if (!name || !category || !amount) {
+          showAlert("warning", "Ups!", "Lengkapi data dulu ya.");
+          return;
+        }
+
+        const newTx = {
+          id: Date.now(),
+          type: "expense",
+          title: name,
+          category: category,
+          amount: parseInt(amount),
+          date: new Date().toISOString(),
+        };
+
+        transactions.unshift(newTx);
+        saveData();
+
+        document.getElementById("expName").value = "";
+        document.getElementById("expAmount").value = "";
+
+        showAlert("success", "Berhasil", "Pengeluaran dicatat.");
+      }
+
+      function submitIncome() {
+        const source = document.getElementById("incSource").value;
+        const amount = document.getElementById("incAmount").value;
+
+        if (!source || !amount) {
+          showAlert("warning", "Ups!", "Lengkapi data dulu ya.");
+          return;
+        }
+
+        const newTx = {
+          id: Date.now(),
+          type: "income",
+          title: source,
+          category: "Pendapatan",
+          amount: parseInt(amount),
+          date: new Date().toISOString(),
+        };
+
+        transactions.unshift(newTx);
+        saveData();
+
+        document.getElementById("incSource").value = "";
+        document.getElementById("incAmount").value = "";
+
+        showAlert("success", "Mantap!", "Pemasukan dicatat.");
+      }
+
+      // Custom Alert Wrapper untuk Dark Mode
+      function showAlert(icon, title, text) {
+        const isDark = document.documentElement.classList.contains("dark");
+        Swal.fire({
+          icon: icon,
+          title: title,
+          text: text,
+          background: isDark ? "#1e293b" : "#ffffff",
+          color: isDark ? "#ffffff" : "#334155",
+          confirmButtonColor: "#3b82f6",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+
+      const formatRupiah = (angka) => {
+        return new Intl.NumberFormat("id-ID").format(angka);
+      };
+
+      function isDateInThisWeek(dateObj) {
+        const todayObj = new Date();
+        const todayDate = todayObj.getDate();
+        const todayDay = todayObj.getDay();
+        const firstDayOfWeek = new Date(
+          todayObj.setDate(todayDate - todayDay + (todayDay == 0 ? -6 : 1))
+        );
+        firstDayOfWeek.setHours(0, 0, 0, 0);
+        const checkDate = new Date(dateObj);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= firstDayOfWeek;
+      }
+
+      function renderDashboard() {
+        let totalBalance = 0;
+        let expenseThisMonth = 0;
+        let expenseThisWeek = 0;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        transactions.forEach((tx) => {
+          const txDate = new Date(tx.date);
+          if (tx.type === "income") {
+            totalBalance += tx.amount;
+          } else {
+            totalBalance -= tx.amount;
+            if (
+              txDate.getMonth() === currentMonth &&
+              txDate.getFullYear() === currentYear
+            ) {
+              expenseThisMonth += tx.amount;
+            }
+            if (
+              isDateInThisWeek(txDate) &&
+              txDate.getMonth() === currentMonth &&
+              txDate.getFullYear() === currentYear
+            ) {
+              expenseThisWeek += tx.amount;
+            }
+          }
+        });
+
+        document.getElementById("totalBalance").innerText = `Rp ${formatRupiah(
+          totalBalance
+        )}`;
+        document.getElementById("expenseMonth").innerText = `Rp ${formatRupiah(
+          expenseThisMonth
+        )}`;
+        document.getElementById("expenseWeek").innerText = `Rp ${formatRupiah(
+          expenseThisWeek
+        )}`;
+      }
+
+      function renderList() {
+        const listContainer = document.getElementById("transactionList");
+        listContainer.innerHTML = "";
+
+        if (transactions.length === 0) {
+          listContainer.innerHTML = `
+                    <div class="text-center py-10 opacity-50">
+                        <i class="fa-solid fa-receipt text-4xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                        <p class="text-sm text-slate-400">Belum ada transaksi</p>
+                    </div>`;
+          return;
+        }
+
+        const recentTx = transactions.slice(0, 20);
+
+        recentTx.forEach((tx) => {
+          const dateObj = new Date(tx.date);
+          const dateStr = dateObj.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          });
+          const timeStr = dateObj.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const isExpense = tx.type === "expense";
+
+          // Styling per item
+          const iconBg = isExpense
+            ? "bg-red-100 text-red-500 dark:bg-red-500/20 dark:text-red-400"
+            : "bg-green-100 text-green-500 dark:bg-green-500/20 dark:text-green-400";
+          const amountColor = isExpense
+            ? "text-red-500 dark:text-red-400"
+            : "text-green-500 dark:text-green-400";
+          const sign = isExpense ? "-" : "+";
+          const iconClass = isExpense
+            ? "fa-arrow-trend-down"
+            : "fa-arrow-trend-up";
+
+          const html = `
+                <div class="bg-white dark:bg-darkcard p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center transition-colors duration-300">
+                    <div class="flex items-center gap-3">
+                        <div class="${iconBg} w-10 h-10 rounded-full flex items-center justify-center text-sm">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${
+                              tx.title
+                            }</h4>
+                            <p class="text-xs text-slate-400 dark:text-slate-500">${
+                              tx.category
+                            } • ${dateStr}, ${timeStr}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="font-bold ${amountColor} text-sm">${sign} Rp ${formatRupiah(
+            tx.amount
+          )}</span>
+                        <button onclick="deleteTx(${
+                          tx.id
+                        })" class="text-xs text-slate-300 hover:text-red-500 px-2 py-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+          listContainer.innerHTML += html;
+        });
+      }
+
+      function deleteTx(id) {
+        const isDark = document.documentElement.classList.contains("dark");
+        Swal.fire({
+          title: "Hapus?",
+          text: "Saldo akan berubah.",
+          icon: "warning",
+          background: isDark ? "#1e293b" : "#ffffff",
+          color: isDark ? "#ffffff" : "#334155",
+          showCancelButton: true,
+          confirmButtonColor: "#ef4444",
+          cancelButtonColor: "#94a3b8",
+          confirmButtonText: "Ya",
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            transactions = transactions.filter((tx) => tx.id !== id);
+            saveData();
+            showAlert("success", "Terhapus", "Data hilang selamanya.");
+          }
+        });
+      }
+
+      function resetData() {
+        const isDark = document.documentElement.classList.contains("dark");
+        Swal.fire({
+          title: "Reset Total?",
+          text: "Semua data akan hilang!",
+          icon: "warning",
+          background: isDark ? "#1e293b" : "#ffffff",
+          color: isDark ? "#ffffff" : "#334155",
+          showCancelButton: true,
+          confirmButtonColor: "#ef4444",
+          confirmButtonText: "Reset",
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            transactions = [];
+            saveData();
+            showAlert("success", "Bersih", "Silakan mulai dari nol.");
+          }
+        });
+      }
+
+      // Init
+      renderDashboard();
+      renderList();
+    </script>
+  </body>
+</html>
