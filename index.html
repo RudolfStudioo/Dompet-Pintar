@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Dompet Pintar - JSON Edition</title>
+    <title>Dompet Pintar</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -53,6 +53,16 @@
           transform: translateY(0);
         }
       }
+
+      /* Hide Scrollbar for clean UI */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
       ::-webkit-scrollbar {
         width: 4px;
       }
@@ -68,12 +78,16 @@
       }
     </style>
   </head>
+
+  <!-- BODY: Background Desktop -->
   <body
     class="bg-gray-200 dark:bg-slate-900 transition-colors duration-300 min-h-screen flex justify-center items-start font-['Plus_Jakarta_Sans']"
   >
+    <!-- WRAPPER UTAMA (Limit Width untuk Desktop rasa HP) -->
     <div
-      class="w-full max-w-[480px] bg-gray-50 dark:bg-darkbg min-h-screen shadow-2xl relative transition-colors duration-300"
+      class="w-full max-w-[480px] bg-gray-50 dark:bg-darkbg min-h-screen shadow-2xl relative transition-colors duration-300 overflow-hidden"
     >
+      <!-- Input File Hidden -->
       <input
         type="file"
         id="importFile"
@@ -82,9 +96,76 @@
         onchange="processImport(this)"
       />
 
+      <!-- ================= DRAWER (RIWAYAT LENGKAP) ================= -->
+      <div
+        id="historyDrawer"
+        class="absolute inset-0 z-50 transform translate-x-full transition-transform duration-300 bg-gray-50 dark:bg-darkbg flex flex-col h-full"
+      >
+        <!-- Drawer Header -->
+        <div
+          class="bg-white dark:bg-darkcard border-b dark:border-slate-700 p-4 flex justify-between items-center shadow-sm z-10"
+        >
+          <h2 class="font-bold text-lg dark:text-white">Detail Riwayat</h2>
+          <button
+            onclick="toggleDrawer(false)"
+            class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+          >
+            <i class="fa-solid fa-xmark text-slate-500 dark:text-slate-300"></i>
+          </button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div
+          class="p-4 bg-white dark:bg-darkcard/50 border-b dark:border-slate-700/50"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-xs font-bold text-slate-400 uppercase">
+              Filter & Urutkan
+            </p>
+            <span
+              id="filteredCount"
+              class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold"
+              >0 Data</span
+            >
+          </div>
+          <div class="flex gap-2">
+            <select
+              id="filterSort"
+              onchange="renderHistoryDrawer()"
+              class="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl border-none outline-none appearance-none cursor-pointer"
+            >
+              <option value="newest">📅 Terbaru</option>
+              <option value="oldest">📅 Terlama</option>
+              <option value="az">🔤 Nama (A-Z)</option>
+              <option value="za">🔤 Nama (Z-A)</option>
+            </select>
+            <select
+              id="filterType"
+              onchange="renderHistoryDrawer()"
+              class="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl border-none outline-none appearance-none cursor-pointer"
+            >
+              <option value="all">Semua Tipe</option>
+              <option value="income">Pemasukan</option>
+              <option value="expense">Pengeluaran</option>
+              <option value="invest">Tabungan</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Drawer Content (Scrollable) -->
+        <div
+          id="drawerContent"
+          class="flex-1 overflow-y-auto p-4 space-y-3 pb-24"
+        >
+          <!-- Content will be injected here via JS -->
+        </div>
+      </div>
+      <!-- ================= END DRAWER ================= -->
+
       <header
         class="relative bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-slate-800 dark:to-slate-900 text-white pt-8 pb-20 px-4 rounded-b-[2.5rem] shadow-xl z-10 transition-colors duration-300"
       >
+        <!-- Top Bar -->
         <div class="flex justify-between items-center mb-6">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-wallet text-blue-200 text-xl"></i>
@@ -93,27 +174,24 @@
           <div class="flex gap-2">
             <button
               onclick="exportData()"
-              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
-              title="Backup Data (Export)"
+              class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              title="Backup JSON"
             >
               <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
             </button>
-
             <button
               onclick="triggerImport()"
-              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
-              title="Restore Data (Import)"
+              class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              title="Restore JSON"
             >
               <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
             </button>
-
             <button
               onclick="toggleDarkMode()"
-              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
             >
               <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
             </button>
-
             <button
               onclick="resetData()"
               class="bg-red-500/80 hover:bg-red-500 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg shadow-red-500/20"
@@ -123,6 +201,7 @@
           </div>
         </div>
 
+        <!-- Saldo Utama -->
         <div class="text-center">
           <p
             class="text-blue-100 text-xs font-medium uppercase tracking-wider opacity-80"
@@ -137,6 +216,7 @@
           </h2>
         </div>
 
+        <!-- GRID INFO 3 KOLOM -->
         <div class="grid grid-cols-3 gap-2">
           <div
             class="bg-white/10 backdrop-blur-sm border border-white/10 p-2.5 rounded-2xl flex flex-col justify-between min-h-[80px]"
@@ -192,6 +272,7 @@
       </header>
 
       <main class="px-5 -mt-12 relative z-20 pb-10">
+        <!-- Input Form Container -->
         <div
           class="bg-white dark:bg-darkcard rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300"
         >
@@ -215,6 +296,7 @@
           </div>
 
           <div class="p-5 pt-2">
+            <!-- Form Pengeluaran -->
             <div id="formExpense" class="fade-in space-y-4">
               <div class="relative group">
                 <div
@@ -288,6 +370,7 @@
               </button>
             </div>
 
+            <!-- Form Pemasukan -->
             <div id="formIncome" class="hidden fade-in space-y-4">
               <div class="relative group">
                 <div
@@ -333,19 +416,27 @@
           </div>
         </div>
 
-        <div class="mt-8 mb-4 flex justify-between items-end px-2">
+        <!-- Header Riwayat + Tombol Lihat Detail -->
+        <div class="mt-8 mb-4 flex justify-between items-center px-2">
           <h3
             class="font-bold text-slate-700 dark:text-slate-300 text-sm tracking-wide uppercase"
           >
-            Riwayat Transaksi
+            Riwayat Terbaru
           </h3>
+          <button
+            onclick="toggleDrawer(true)"
+            class="text-xs font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center gap-1 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors active:scale-95"
+          >
+            Lihat Detail <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
         </div>
 
+        <!-- List Transaksi Utama (Limit 5 items biar bersih) -->
         <div id="transactionList" class="space-y-3 pb-8"></div>
       </main>
     </div>
+
     <script>
-      // ... (Copy paste script JS yang tadi di sini)
       // --- DARK MODE LOGIC ---
       const themeIcon = document.getElementById("themeIcon");
       if (
@@ -376,7 +467,7 @@
         }
       }
 
-      // --- APP LOGIC ---
+      // --- CORE DATA LOGIC ---
       const STORAGE_KEY = "cashflow_data_v2_dark";
       let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
@@ -384,192 +475,356 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
         renderDashboard();
         renderList();
+        renderHistoryDrawer(); // Refresh drawer if open
       }
 
-      // --- FITUR BARU: IMPORT / EXPORT ---
+      // --- EXPORT / IMPORT ---
       function exportData() {
-        if (transactions.length === 0) {
-          showAlert("info", "Kosong", "Tidak ada data untuk diexport.");
-          return;
-        }
+        if (transactions.length === 0)
+          return showAlert("info", "Kosong", "Tidak ada data.");
         const dataStr = JSON.stringify(transactions, null, 2);
         const dataUri =
           "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-        const exportFileDefaultName =
-          "dompet_pintar_backup_" +
-          new Date().toISOString().slice(0, 10) +
-          ".json";
-
         const linkElement = document.createElement("a");
         linkElement.setAttribute("href", dataUri);
-        linkElement.setAttribute("download", exportFileDefaultName);
+        linkElement.setAttribute(
+          "download",
+          "dompet_pintar_backup_" +
+            new Date().toISOString().slice(0, 10) +
+            ".json"
+        );
         linkElement.click();
-
-        showAlert("success", "Terunduh", "Simpan file JSON ini baik-baik!");
+        showAlert("success", "Terunduh", "Simpan file JSON ini.");
       }
 
       function triggerImport() {
         document.getElementById("importFile").click();
       }
-
       function processImport(input) {
         const file = input.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function (e) {
           try {
             const json = JSON.parse(e.target.result);
             if (!Array.isArray(json)) throw new Error("Format salah");
-
-            // Konfirmasi sebelum menimpa
             const isDark = document.documentElement.classList.contains("dark");
             Swal.fire({
               title: "Timpa Data?",
-              text: "Data yang ada sekarang akan diganti dengan data dari file.",
+              text: "Data lama akan hilang.",
               icon: "question",
               background: isDark ? "#1e293b" : "#ffffff",
               color: isDark ? "#ffffff" : "#334155",
               showCancelButton: true,
+              confirmButtonText: "Ya, Import",
               confirmButtonColor: "#3b82f6",
               cancelButtonColor: "#ef4444",
-              confirmButtonText: "Ya, Import",
-              cancelButtonText: "Batal",
             }).then((result) => {
               if (result.isConfirmed) {
                 transactions = json;
                 saveData();
-                showAlert("success", "Berhasil", "Data berhasil dipulihkan!");
+                showAlert("success", "Berhasil", "Data dipulihkan!");
               }
               input.value = "";
             });
           } catch (err) {
-            showAlert("error", "Gagal", "File JSON rusak atau tidak valid.");
+            showAlert("error", "Gagal", "File rusak.");
             input.value = "";
           }
         };
         reader.readAsText(file);
       }
 
-      // --- GRID DISPLAY LOGIC ---
-      function renderDashboard() {
-        let totalBalance = 0;
-        let incomeThisMonth = 0;
-        let expenseThisMonth = 0;
-        let investmentTotal = 0;
+      // --- DRAWER & FILTER LOGIC (NEW FEATURE) ---
+      function toggleDrawer(open) {
+        const drawer = document.getElementById("historyDrawer");
+        if (open) {
+          drawer.classList.remove("translate-x-full");
+          renderHistoryDrawer();
+        } else {
+          drawer.classList.add("translate-x-full");
+        }
+      }
 
+      function renderHistoryDrawer() {
+        const content = document.getElementById("drawerContent");
+        const sortType = document.getElementById("filterSort").value;
+        const filterType = document.getElementById("filterType").value;
+
+        content.innerHTML = "";
+
+        // 1. Filter Logic
+        let filtered = transactions.filter((tx) => {
+          if (filterType === "all") return true;
+          if (filterType === "income") return tx.type === "income";
+          if (filterType === "expense")
+            return tx.type === "expense" && tx.category !== "Investasi";
+          if (filterType === "invest") return tx.category === "Investasi";
+          return true;
+        });
+
+        // Update Count Badge
+        document.getElementById(
+          "filteredCount"
+        ).innerText = `${filtered.length} Data`;
+
+        // 2. Sort Logic
+        if (sortType === "az")
+          filtered.sort((a, b) => a.title.localeCompare(b.title));
+        else if (sortType === "za")
+          filtered.sort((a, b) => b.title.localeCompare(a.title));
+        else if (sortType === "oldest")
+          filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+        else filtered.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest default
+
+        if (filtered.length === 0) {
+          content.innerHTML = `<div class="text-center py-20 opacity-50 flex flex-col items-center"><i class="fa-solid fa-filter-circle-xmark text-4xl mb-2"></i><p class="text-sm">Data tidak ditemukan.</p></div>`;
+          return;
+        }
+
+        // 3. Group by Month Logic
+        const grouped = {};
+        // Use filtered array to maintain sort order logic if sorting by date
+        filtered.forEach((tx) => {
+          const date = new Date(tx.date);
+          const monthKey = date.toLocaleString("id-ID", {
+            month: "long",
+            year: "numeric",
+          }); // "Januari 2026"
+          if (!grouped[monthKey]) grouped[monthKey] = [];
+          grouped[monthKey].push(tx);
+        });
+
+        // 4. Render Accordions
+        Object.keys(grouped).forEach((month, index) => {
+          const txs = grouped[month];
+
+          // Calculate Monthly Summary inside Filtered Data
+          let mInc = 0,
+            mExp = 0,
+            mSav = 0;
+          txs.forEach((t) => {
+            if (t.type === "income") mInc += t.amount;
+            else {
+              mExp += t.amount;
+              if (t.category === "Investasi") mSav += t.amount;
+            }
+          });
+
+          // HTML Structure for Accordion
+          const wrapper = document.createElement("div");
+          wrapper.className =
+            "bg-white dark:bg-darkcard rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm";
+
+          // Header
+          const header = document.createElement("div");
+          header.className =
+            "p-3 bg-slate-50 dark:bg-slate-800/50 flex flex-col cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition select-none";
+          header.onclick = () => {
+            const body = document.getElementById(`month-body-${index}`);
+            const arrow = document.getElementById(`arrow-${index}`);
+            body.classList.toggle("hidden");
+            arrow.classList.toggle("rotate-180");
+          };
+
+          header.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-sm text-slate-700 dark:text-slate-200">${month}</span>
+                    <i id="arrow-${index}" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-300"></i>
+                </div>
+                <div class="flex gap-2 text-[10px] overflow-x-auto no-scrollbar">
+                    ${
+                      mInc > 0
+                        ? `<span class="whitespace-nowrap text-green-600 bg-green-100 dark:bg-green-500/10 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-arrow-up text-[9px]"></i> ${formatSimple(
+                            mInc
+                          )}</span>`
+                        : ""
+                    }
+                    ${
+                      mExp > 0
+                        ? `<span class="whitespace-nowrap text-red-600 bg-red-100 dark:bg-red-500/10 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-arrow-down text-[9px]"></i> ${formatSimple(
+                            mExp
+                          )}</span>`
+                        : ""
+                    }
+                    ${
+                      mSav > 0
+                        ? `<span class="whitespace-nowrap text-purple-600 bg-purple-100 dark:bg-purple-500/10 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-piggy-bank text-[9px]"></i> ${formatSimple(
+                            mSav
+                          )}</span>`
+                        : ""
+                    }
+                    ${
+                      mInc === 0 && mExp === 0 && mSav === 0
+                        ? '<span class="text-slate-400">Tidak ada ringkasan</span>'
+                        : ""
+                    }
+                </div>
+            `;
+
+          // Body (List Items)
+          const body = document.createElement("div");
+          body.id = `month-body-${index}`;
+          // Open first month by default
+          body.className =
+            index === 0
+              ? "divide-y divide-slate-100 dark:divide-slate-700"
+              : "hidden divide-y divide-slate-100 dark:divide-slate-700";
+          if (index === 0)
+            header.querySelector("i").classList.add("rotate-180"); // Rotate arrow for first item
+
+          txs.forEach((tx) => {
+            const isExp = tx.type === "expense";
+            const color = isExp
+              ? "text-red-500 dark:text-red-400"
+              : "text-green-500 dark:text-green-400";
+            const sign = isExp ? "-" : "+";
+            body.innerHTML += `
+                    <div class="p-3 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-800/30 transition group relative">
+                        <div>
+                            <p class="text-xs font-bold text-slate-700 dark:text-slate-300">${
+                              tx.title
+                            }</p>
+                            <p class="text-[10px] text-slate-400">${
+                              tx.category
+                            } • ${new Date(tx.date).toLocaleDateString(
+              "id-ID",
+              { day: "numeric" }
+            )}</p>
+                        </div>
+                        <div class="flex flex-col items-end">
+                             <span class="text-xs font-bold ${color}">${sign} ${formatSimple(
+              tx.amount
+            )}</span>
+                             <button onclick="deleteTx(${
+                               tx.id
+                             })" class="text-[10px] text-slate-300 hover:text-red-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Hapus</button>
+                        </div>
+                    </div>
+                `;
+          });
+
+          wrapper.appendChild(header);
+          wrapper.appendChild(body);
+          content.appendChild(wrapper);
+        });
+      }
+
+      function formatSimple(num) {
+        if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "M";
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + "jt";
+        if (num >= 1000) return (num / 1000).toFixed(0) + "rb";
+        return num;
+      }
+
+      // --- DASHBOARD LOGIC (SAMA) ---
+      function renderDashboard() {
+        let total = 0,
+          incM = 0,
+          expM = 0,
+          inv = 0;
         const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const curM = now.getMonth();
+        const curY = now.getFullYear();
 
         transactions.forEach((tx) => {
-          const txDate = new Date(tx.date);
-          const isSameMonth =
-            txDate.getMonth() === currentMonth &&
-            txDate.getFullYear() === currentYear;
-
+          const d = new Date(tx.date);
+          const sameM = d.getMonth() === curM && d.getFullYear() === curY;
           if (tx.type === "income") {
-            totalBalance += tx.amount;
-            if (isSameMonth) incomeThisMonth += tx.amount;
+            total += tx.amount;
+            if (sameM) incM += tx.amount;
           } else {
-            totalBalance -= tx.amount;
-            if (isSameMonth) expenseThisMonth += tx.amount;
-            if (tx.category === "Investasi") {
-              investmentTotal += tx.amount;
-            }
+            total -= tx.amount;
+            if (sameM) expM += tx.amount;
+            if (tx.category === "Investasi") inv += tx.amount;
           }
         });
 
         document.getElementById("totalBalance").innerText = `Rp ${formatRupiah(
-          totalBalance
+          total
         )}`;
         document.getElementById("incomeMonth").innerText = `Rp ${formatRupiah(
-          incomeThisMonth
+          incM
         )}`;
         document.getElementById("expenseMonth").innerText = `Rp ${formatRupiah(
-          expenseThisMonth
+          expM
         )}`;
         document.getElementById("savingsTotal").innerText = `Rp ${formatRupiah(
-          investmentTotal
+          inv
         )}`;
       }
 
-      // --- EXISTING LOGIC ---
       function switchTab(type) {
-        const expenseBtn = document.getElementById("tabExpense");
-        const incomeBtn = document.getElementById("tabIncome");
-        const expenseForm = document.getElementById("formExpense");
-        const incomeForm = document.getElementById("formIncome");
-        const activeClass = "shadow-sm bg-white dark:bg-slate-600";
-        const inactiveClass =
+        const eBtn = document.getElementById("tabExpense");
+        const iBtn = document.getElementById("tabIncome");
+        const eForm = document.getElementById("formExpense");
+        const iForm = document.getElementById("formIncome");
+        const active = "shadow-sm bg-white dark:bg-slate-600";
+        const inactive =
           "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
 
         if (type === "expense") {
-          expenseBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-red-500 ${activeClass}`;
-          incomeBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactiveClass}`;
-          expenseForm.classList.remove("hidden");
-          incomeForm.classList.add("hidden");
+          eBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-red-500 ${active}`;
+          iBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactive}`;
+          eForm.classList.remove("hidden");
+          iForm.classList.add("hidden");
         } else {
-          expenseBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactiveClass}`;
-          incomeBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-green-500 ${activeClass}`;
-          expenseForm.classList.add("hidden");
-          incomeForm.classList.remove("hidden");
+          eBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${inactive}`;
+          iBtn.className = `flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 text-green-500 ${active}`;
+          eForm.classList.add("hidden");
+          iForm.classList.remove("hidden");
         }
       }
 
       function submitExpense() {
-        const name = document.getElementById("expName").value;
-        const category = document.getElementById("expCategory").value;
-        const amount = document.getElementById("expAmount").value;
-        if (!name || !category || !amount) {
-          showAlert("warning", "Ups!", "Lengkapi data dulu.");
+        const n = document.getElementById("expName").value;
+        const c = document.getElementById("expCategory").value;
+        const a = document.getElementById("expAmount").value;
+        if (!n || !c || !a) {
+          showAlert("warning", "Ups!", "Lengkapi data.");
           return;
         }
-
-        const newTx = {
+        transactions.unshift({
           id: Date.now(),
           type: "expense",
-          title: name,
-          category: category,
-          amount: parseInt(amount),
+          title: n,
+          category: c,
+          amount: parseInt(a),
           date: new Date().toISOString(),
-        };
-        transactions.unshift(newTx);
+        });
         saveData();
         document.getElementById("expName").value = "";
         document.getElementById("expAmount").value = "";
-        showAlert("success", "Tercatat", "Pengeluaran masuk.");
+        showAlert("success", "Tercatat", "Pengeluaran disimpan.");
       }
 
       function submitIncome() {
-        const source = document.getElementById("incSource").value;
-        const amount = document.getElementById("incAmount").value;
-        if (!source || !amount) {
-          showAlert("warning", "Ups!", "Lengkapi data dulu.");
+        const s = document.getElementById("incSource").value;
+        const a = document.getElementById("incAmount").value;
+        if (!s || !a) {
+          showAlert("warning", "Ups!", "Lengkapi data.");
           return;
         }
-
-        const newTx = {
+        transactions.unshift({
           id: Date.now(),
           type: "income",
-          title: source,
+          title: s,
           category: "Pendapatan",
-          amount: parseInt(amount),
+          amount: parseInt(a),
           date: new Date().toISOString(),
-        };
-        transactions.unshift(newTx);
+        });
         saveData();
         document.getElementById("incSource").value = "";
         document.getElementById("incAmount").value = "";
-        showAlert("success", "Masuk!", "Pemasukan tercatat.");
+        showAlert("success", "Masuk!", "Pemasukan disimpan.");
       }
 
       function showAlert(icon, title, text) {
         const isDark = document.documentElement.classList.contains("dark");
         Swal.fire({
-          icon: icon,
-          title: title,
-          text: text,
+          icon,
+          title,
+          text,
           background: isDark ? "#1e293b" : "#ffffff",
           color: isDark ? "#ffffff" : "#334155",
           confirmButtonColor: "#3b82f6",
@@ -578,62 +833,52 @@
         });
       }
 
-      const formatRupiah = (angka) =>
-        new Intl.NumberFormat("id-ID").format(angka);
+      const formatRupiah = (n) => new Intl.NumberFormat("id-ID").format(n);
 
       function renderList() {
-        const listContainer = document.getElementById("transactionList");
-        listContainer.innerHTML = "";
+        const list = document.getElementById("transactionList");
+        list.innerHTML = "";
         if (transactions.length === 0) {
-          listContainer.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-receipt text-4xl mb-2 text-slate-300 dark:text-slate-600"></i><p class="text-sm text-slate-400">Belum ada transaksi</p></div>`;
+          list.innerHTML = `<div class="text-center py-10 opacity-50"><p class="text-sm">Belum ada transaksi</p></div>`;
           return;
         }
-        const recentTx = transactions.slice(0, 20);
-        recentTx.forEach((tx) => {
-          const dateObj = new Date(tx.date);
-          const dateStr = dateObj.toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "short",
-          });
-          const timeStr = dateObj.toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          const isExpense = tx.type === "expense";
-          const iconBg = isExpense
+        // HANYA TAMPILKAN 5 TERAKHIR DI DASHBOARD AGAR RINGAN
+        const recent = transactions.slice(0, 5);
+        recent.forEach((tx) => {
+          const d = new Date(tx.date);
+          const isExp = tx.type === "expense";
+          const iconBg = isExp
             ? "bg-red-100 text-red-500 dark:bg-red-500/20 dark:text-red-400"
             : "bg-green-100 text-green-500 dark:bg-green-500/20 dark:text-green-400";
-          const amountColor = isExpense
+          const amtColor = isExp
             ? "text-red-500 dark:text-red-400"
             : "text-green-500 dark:text-green-400";
-          const sign = isExpense ? "-" : "+";
-          const iconClass = isExpense
-            ? "fa-arrow-trend-down"
-            : "fa-arrow-trend-up";
+          const sign = isExp ? "-" : "+";
+          const icon = isExp ? "fa-arrow-trend-down" : "fa-arrow-trend-up";
 
-          const html = `
+          list.innerHTML += `
             <div class="bg-white dark:bg-darkcard p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center transition-colors duration-300">
                 <div class="flex items-center gap-3">
-                    <div class="${iconBg} w-10 h-10 rounded-full flex items-center justify-center text-sm"><i class="fa-solid ${iconClass}"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${
-                          tx.title
-                        }</h4>
-                        <p class="text-xs text-slate-400 dark:text-slate-500">${
-                          tx.category
-                        } • ${dateStr}, ${timeStr}</p>
-                    </div>
+                    <div class="${iconBg} w-10 h-10 rounded-full flex items-center justify-center text-sm"><i class="fa-solid ${icon}"></i></div>
+                    <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${
+                      tx.title
+                    }</h4><p class="text-xs text-slate-400">${
+            tx.category
+          } • ${d.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          })}</p></div>
                 </div>
                 <div class="flex flex-col items-end gap-1">
-                    <span class="font-bold ${amountColor} text-sm">${sign} Rp ${formatRupiah(
+                    <span class="font-bold ${amtColor} text-sm">${sign} Rp ${formatRupiah(
             tx.amount
-          )}</span>
+          )}
+          </span>
                     <button onclick="deleteTx(${
                       tx.id
-                    })" class="text-xs text-slate-300 hover:text-red-500 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                    })"class="text-xs text-slate-300 hover:text-red-500 px-2"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>`;
-          listContainer.innerHTML += html;
         });
       }
 
@@ -641,42 +886,49 @@
         const isDark = document.documentElement.classList.contains("dark");
         Swal.fire({
           title: "Hapus?",
-          text: "Tidak bisa dikembalikan.",
           icon: "warning",
           background: isDark ? "#1e293b" : "#ffffff",
           color: isDark ? "#ffffff" : "#334155",
           showCancelButton: true,
+          confirmButtonText: "Ya",
           confirmButtonColor: "#ef4444",
           cancelButtonColor: "#94a3b8",
-          confirmButtonText: "Ya",
-          cancelButtonText: "Batal",
-        }).then((result) => {
-          if (result.isConfirmed) {
+        }).then((res) => {
+          if (res.isConfirmed) {
             transactions = transactions.filter((tx) => tx.id !== id);
             saveData();
-            showAlert("success", "Terhapus", "");
           }
         });
       }
 
       function resetData() {
         const isDark = document.documentElement.classList.contains("dark");
+
         Swal.fire({
-          title: "BAHAYA: Reset Total?",
-          text: "Semua data akan hilang permanen! Pastikan sudah Export JSON dulu.",
+          title: "Reset Total?",
+          // HAPUS properti 'text' dan 'caption'. GANTI dengan 'html' di bawah ini:
+          html: `
+            <div style="color: #ef4444; font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">
+                !!! PERINGATAN !!!
+            </div>
+            <div style="font-size: 0.9rem; opacity: 0.8;">
+                Data tidak bisa dikembalikan jika dihapus
+            </div>
+        `,
           icon: "warning",
+          // Sisanya sama...
           background: isDark ? "#1e293b" : "#ffffff",
           color: isDark ? "#ffffff" : "#334155",
           showCancelButton: true,
+          confirmButtonText: "Hapus Semua",
           confirmButtonColor: "#ef4444",
           cancelButtonColor: "#94a3b8",
-          confirmButtonText: "Ya, Hapus Semua",
-          cancelButtonText: "Batal",
-        }).then((result) => {
-          if (result.isConfirmed) {
+        }).then((res) => {
+          if (res.isConfirmed) {
             transactions = [];
             saveData();
-            showAlert("success", "Bersih", "Data sudah di-reset.");
+            // Tambahkan feedback visual setelah menghapus
+            Swal.fire("Terhapus!", "Data berhasil direset.", "success");
           }
         });
       }
