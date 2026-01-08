@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Dompet Pintar - Dark Mode</title>
+    <title>Dompet Pintar - JSON Edition</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -53,8 +53,6 @@
           transform: translateY(0);
         }
       }
-
-      /* Custom Scrollbar for clean look */
       ::-webkit-scrollbar {
         width: 4px;
       }
@@ -71,236 +69,285 @@
     </style>
   </head>
   <body
-    class="bg-gray-50 text-slate-800 dark:bg-darkbg dark:text-slate-200 transition-colors duration-300 min-h-screen pb-24"
+    class="bg-gray-200 dark:bg-slate-900 transition-colors duration-300 min-h-screen flex justify-center items-start font-['Plus_Jakarta_Sans']"
   >
-    <header
-      class="relative bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-slate-800 dark:to-slate-900 text-white pt-8 pb-20 px-6 rounded-b-[2.5rem] shadow-xl z-10 transition-colors duration-300"
+    <div
+      class="w-full max-w-[480px] bg-gray-50 dark:bg-darkbg min-h-screen shadow-2xl relative transition-colors duration-300"
     >
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-wallet text-blue-200 text-xl"></i>
-          <h1 class="text-lg font-bold tracking-tight">Dompet Pintar</h1>
-        </div>
-        <div class="flex gap-3">
-          <button
-            onclick="toggleDarkMode()"
-            class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
-          >
-            <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
-          </button>
-          <button
-            onclick="resetData()"
-            class="bg-red-500/80 hover:bg-red-500 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg shadow-red-500/20"
-          >
-            <i class="fa-solid fa-rotate-right text-sm"></i>
-          </button>
-        </div>
-      </div>
+      <input
+        type="file"
+        id="importFile"
+        accept=".json"
+        class="hidden"
+        onchange="processImport(this)"
+      />
 
-      <div class="text-center">
-        <p
-          class="text-blue-100 text-xs font-medium uppercase tracking-wider opacity-80"
-        >
-          Sisa Saldo Kamu
-        </p>
-        <h2
-          id="totalBalance"
-          class="text-4xl font-extrabold mt-2 mb-6 drop-shadow-sm"
-        >
-          Rp 0
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div
-          class="bg-white/10 backdrop-blur-sm border border-white/10 p-3 rounded-2xl"
-        >
-          <div class="flex items-center gap-2 mb-1">
-            <div
-              class="w-6 h-6 rounded-full bg-red-400/20 flex items-center justify-center text-red-200 text-xs"
-            >
-              <i class="fa-solid fa-arrow-trend-down"></i>
-            </div>
-            <span class="text-[10px] text-blue-100 uppercase font-bold"
-              >Minggu Ini</span
-            >
-          </div>
-          <p id="expenseWeek" class="text-lg font-bold">Rp 0</p>
-        </div>
-        <div
-          class="bg-white/10 backdrop-blur-sm border border-white/10 p-3 rounded-2xl"
-        >
-          <div class="flex items-center gap-2 mb-1">
-            <div
-              class="w-6 h-6 rounded-full bg-orange-400/20 flex items-center justify-center text-orange-200 text-xs"
-            >
-              <i class="fa-solid fa-calendar"></i>
-            </div>
-            <span class="text-[10px] text-blue-100 uppercase font-bold"
-              >Bulan Ini</span
-            >
-          </div>
-          <p id="expenseMonth" class="text-lg font-bold">Rp 0</p>
-        </div>
-      </div>
-    </header>
-
-    <main class="px-5 -mt-12 relative z-20">
-      <div
-        class="bg-white dark:bg-darkcard rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300"
+      <header
+        class="relative bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-slate-800 dark:to-slate-900 text-white pt-8 pb-20 px-4 rounded-b-[2.5rem] shadow-xl z-10 transition-colors duration-300"
       >
-        <div class="p-2">
-          <div class="bg-slate-100 dark:bg-darkinput rounded-xl p-1 flex">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wallet text-blue-200 text-xl"></i>
+            <h1 class="text-lg font-bold tracking-tight">Dompet Pintar</h1>
+          </div>
+          <div class="flex gap-2">
             <button
-              onclick="switchTab('expense')"
-              id="tabExpense"
-              class="flex-1 py-3 rounded-lg text-sm font-bold shadow-sm bg-white dark:bg-slate-600 text-red-500 transition-all duration-300"
+              onclick="exportData()"
+              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              title="Backup Data (Export)"
             >
-              Pengeluaran
+              <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
             </button>
+
             <button
-              onclick="switchTab('income')"
-              id="tabIncome"
-              class="flex-1 py-3 rounded-lg text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all duration-300"
+              onclick="triggerImport()"
+              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              title="Restore Data (Import)"
             >
-              Pemasukan
+              <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+            </button>
+
+            <button
+              onclick="toggleDarkMode()"
+              class="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all"
+            >
+              <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+            </button>
+
+            <button
+              onclick="resetData()"
+              class="bg-red-500/80 hover:bg-red-500 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg shadow-red-500/20"
+            >
+              <i class="fa-solid fa-trash text-sm"></i>
             </button>
           </div>
         </div>
 
-        <div class="p-5 pt-2">
-          <div id="formExpense" class="fade-in space-y-4">
-            <div class="relative group">
-              <div
-                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-              >
-                <i
-                  class="fa-solid fa-tag text-slate-400 group-focus-within:text-red-500 transition-colors"
-                ></i>
-              </div>
-              <input
-                type="text"
-                id="expName"
-                placeholder="Nama Barang (Contoh: Kopi)"
-                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
-              />
-            </div>
+        <div class="text-center">
+          <p
+            class="text-blue-100 text-xs font-medium uppercase tracking-wider opacity-80"
+          >
+            Sisa Saldo Kamu
+          </p>
+          <h2
+            id="totalBalance"
+            class="text-4xl font-extrabold mt-2 mb-6 drop-shadow-sm"
+          >
+            Rp 0
+          </h2>
+        </div>
 
-            <div class="relative group">
+        <div class="grid grid-cols-3 gap-2">
+          <div
+            class="bg-white/10 backdrop-blur-sm border border-white/10 p-2.5 rounded-2xl flex flex-col justify-between min-h-[80px]"
+          >
+            <div class="flex items-center gap-1.5 mb-1">
               <div
-                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                class="w-5 h-5 rounded-full bg-green-400/20 flex items-center justify-center text-green-200 text-[10px]"
               >
-                <i
-                  class="fa-solid fa-layer-group text-slate-400 group-focus-within:text-red-500 transition-colors"
-                ></i>
+                <i class="fa-solid fa-arrow-trend-up"></i>
               </div>
-              <select
-                id="expCategory"
-                class="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm appearance-none cursor-pointer"
+              <span
+                class="text-[9px] text-blue-100 uppercase font-bold leading-tight"
+                >Masuk<br />Bulan Ini</span
               >
-                <option value="" disabled selected>Pilih Kategori...</option>
-                <option value="Makanan">🍔 Makanan & Minuman</option>
-                <option value="Transportasi">🛵 Transportasi</option>
-                <option value="Belanja">🛒 Belanja Bulanan</option>
-                <option value="Tagihan">⚡ Tagihan & Listrik</option>
-                <option value="Hiburan">🎬 Hiburan</option>
-                <option value="Investasi">📈 Investasi</option>
-                <option value="Lainnya">📦 Lainnya (Other)</option>
-              </select>
-              <div
-                class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"
-              >
-                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
-              </div>
             </div>
-
-            <div class="relative group">
-              <div
-                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-              >
-                <span
-                  class="text-slate-400 font-bold text-sm group-focus-within:text-red-500 transition-colors"
-                  >Rp</span
-                >
-              </div>
-              <input
-                type="number"
-                id="expAmount"
-                placeholder="0"
-                inputmode="numeric"
-                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
-              />
-            </div>
-
-            <button
-              onclick="submitExpense()"
-              class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
-            >
-              <i class="fa-solid fa-plus"></i> Catat Pengeluaran
-            </button>
+            <p id="incomeMonth" class="text-sm font-bold truncate">Rp 0</p>
           </div>
 
-          <div id="formIncome" class="hidden fade-in space-y-4">
-            <div class="relative group">
+          <div
+            class="bg-white/10 backdrop-blur-sm border border-white/10 p-2.5 rounded-2xl flex flex-col justify-between min-h-[80px]"
+          >
+            <div class="flex items-center gap-1.5 mb-1">
               <div
-                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                class="w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center text-red-200 text-[10px]"
               >
-                <i
-                  class="fa-solid fa-hand-holding-dollar text-slate-400 group-focus-within:text-green-500 transition-colors"
-                ></i>
+                <i class="fa-solid fa-arrow-trend-down"></i>
               </div>
-              <input
-                type="text"
-                id="incSource"
-                placeholder="Sumber Dana (Gaji, Bonus)"
-                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
-              />
+              <span
+                class="text-[9px] text-blue-100 uppercase font-bold leading-tight"
+                >Keluar<br />Bulan Ini</span
+              >
             </div>
+            <p id="expenseMonth" class="text-sm font-bold truncate">Rp 0</p>
+          </div>
 
-            <div class="relative group">
+          <div
+            class="bg-white/10 backdrop-blur-sm border border-white/10 p-2.5 rounded-2xl flex flex-col justify-between min-h-[80px]"
+          >
+            <div class="flex items-center gap-1.5 mb-1">
               <div
-                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                class="w-5 h-5 rounded-full bg-purple-400/20 flex items-center justify-center text-purple-200 text-[10px]"
               >
-                <span
-                  class="text-slate-400 font-bold text-sm group-focus-within:text-green-500 transition-colors"
-                  >Rp</span
-                >
+                <i class="fa-solid fa-piggy-bank"></i>
               </div>
-              <input
-                type="number"
-                id="incAmount"
-                placeholder="0"
-                inputmode="numeric"
-                class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
-              />
+              <span
+                class="text-[9px] text-blue-100 uppercase font-bold leading-tight"
+                >Tabungan<br />Anda</span
+              >
             </div>
-
-            <button
-              onclick="submitIncome()"
-              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
-            >
-              <i class="fa-solid fa-download"></i> Catat Pemasukan
-            </button>
+            <p id="savingsTotal" class="text-sm font-bold truncate">Rp 0</p>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div class="mt-8 mb-4 flex justify-between items-end px-2">
-        <h3
-          class="font-bold text-slate-700 dark:text-slate-300 text-sm tracking-wide uppercase"
+      <main class="px-5 -mt-12 relative z-20 pb-10">
+        <div
+          class="bg-white dark:bg-darkcard rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300"
         >
-          Riwayat Transaksi
-        </h3>
-      </div>
+          <div class="p-2">
+            <div class="bg-slate-100 dark:bg-darkinput rounded-xl p-1 flex">
+              <button
+                onclick="switchTab('expense')"
+                id="tabExpense"
+                class="flex-1 py-3 rounded-lg text-sm font-bold shadow-sm bg-white dark:bg-slate-600 text-red-500 transition-all duration-300"
+              >
+                Pengeluaran
+              </button>
+              <button
+                onclick="switchTab('income')"
+                id="tabIncome"
+                class="flex-1 py-3 rounded-lg text-sm font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all duration-300"
+              >
+                Pemasukan
+              </button>
+            </div>
+          </div>
 
-      <div id="transactionList" class="space-y-3 pb-8"></div>
-    </main>
+          <div class="p-5 pt-2">
+            <div id="formExpense" class="fade-in space-y-4">
+              <div class="relative group">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <i
+                    class="fa-solid fa-tag text-slate-400 group-focus-within:text-red-500 transition-colors"
+                  ></i>
+                </div>
+                <input
+                  type="text"
+                  id="expName"
+                  placeholder="Nama (Contoh: Kopi/Saham)"
+                  class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
+                />
+              </div>
 
+              <div class="relative group">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <i
+                    class="fa-solid fa-layer-group text-slate-400 group-focus-within:text-red-500 transition-colors"
+                  ></i>
+                </div>
+                <select
+                  id="expCategory"
+                  class="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm appearance-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Pilih Kategori...</option>
+                  <option value="Makanan">🍔 Makanan & Minuman</option>
+                  <option value="Transportasi">🛵 Transportasi</option>
+                  <option value="Belanja">🛒 Belanja Bulanan</option>
+                  <option value="Tagihan">⚡ Tagihan & Listrik</option>
+                  <option value="Hiburan">🎬 Hiburan</option>
+                  <option value="Investasi">📈 Investasi (Tabungan)</option>
+                  <option value="Lainnya">📦 Lainnya</option>
+                </select>
+                <div
+                  class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"
+                >
+                  <i
+                    class="fa-solid fa-chevron-down text-xs text-slate-400"
+                  ></i>
+                </div>
+              </div>
+
+              <div class="relative group">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <span
+                    class="text-slate-400 font-bold text-sm group-focus-within:text-red-500 transition-colors"
+                    >Rp</span
+                  >
+                </div>
+                <input
+                  type="number"
+                  id="expAmount"
+                  placeholder="0"
+                  inputmode="numeric"
+                  class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
+                />
+              </div>
+
+              <button
+                onclick="submitExpense()"
+                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
+              >
+                <i class="fa-solid fa-plus"></i> Catat Pengeluaran
+              </button>
+            </div>
+
+            <div id="formIncome" class="hidden fade-in space-y-4">
+              <div class="relative group">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <i
+                    class="fa-solid fa-hand-holding-dollar text-slate-400 group-focus-within:text-green-500 transition-colors"
+                  ></i>
+                </div>
+                <input
+                  type="text"
+                  id="incSource"
+                  placeholder="Sumber Dana (Gaji, Bonus)"
+                  class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-medium text-sm placeholder-slate-400"
+                />
+              </div>
+
+              <div class="relative group">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <span
+                    class="text-slate-400 font-bold text-sm group-focus-within:text-green-500 transition-colors"
+                    >Rp</span
+                  >
+                </div>
+                <input
+                  type="number"
+                  id="incAmount"
+                  placeholder="0"
+                  inputmode="numeric"
+                  class="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-darkinput dark:text-white border-0 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-darkcard transition-all font-bold text-lg font-mono"
+                />
+              </div>
+
+              <button
+                onclick="submitIncome()"
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/30 active:scale-95 transition-transform flex justify-center items-center gap-2"
+              >
+                <i class="fa-solid fa-download"></i> Catat Pemasukan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 mb-4 flex justify-between items-end px-2">
+          <h3
+            class="font-bold text-slate-700 dark:text-slate-300 text-sm tracking-wide uppercase"
+          >
+            Riwayat Transaksi
+          </h3>
+        </div>
+
+        <div id="transactionList" class="space-y-3 pb-8"></div>
+      </main>
+    </div>
     <script>
+      // ... (Copy paste script JS yang tadi di sini)
       // --- DARK MODE LOGIC ---
       const themeIcon = document.getElementById("themeIcon");
-
-      // Cek LocalStorage saat load
       if (
         localStorage.theme === "dark" ||
         (!("theme" in localStorage) &&
@@ -329,8 +376,8 @@
         }
       }
 
-      // --- APP LOGIC (Sama seperti sebelumnya dengan styling update) ---
-      const STORAGE_KEY = "cashflow_data_v2_dark"; // Ganti key biar fresh
+      // --- APP LOGIC ---
+      const STORAGE_KEY = "cashflow_data_v2_dark";
       let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
       function saveData() {
@@ -339,13 +386,120 @@
         renderList();
       }
 
+      // --- FITUR BARU: IMPORT / EXPORT ---
+      function exportData() {
+        if (transactions.length === 0) {
+          showAlert("info", "Kosong", "Tidak ada data untuk diexport.");
+          return;
+        }
+        const dataStr = JSON.stringify(transactions, null, 2);
+        const dataUri =
+          "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+        const exportFileDefaultName =
+          "dompet_pintar_backup_" +
+          new Date().toISOString().slice(0, 10) +
+          ".json";
+
+        const linkElement = document.createElement("a");
+        linkElement.setAttribute("href", dataUri);
+        linkElement.setAttribute("download", exportFileDefaultName);
+        linkElement.click();
+
+        showAlert("success", "Terunduh", "Simpan file JSON ini baik-baik!");
+      }
+
+      function triggerImport() {
+        document.getElementById("importFile").click();
+      }
+
+      function processImport(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const json = JSON.parse(e.target.result);
+            if (!Array.isArray(json)) throw new Error("Format salah");
+
+            // Konfirmasi sebelum menimpa
+            const isDark = document.documentElement.classList.contains("dark");
+            Swal.fire({
+              title: "Timpa Data?",
+              text: "Data yang ada sekarang akan diganti dengan data dari file.",
+              icon: "question",
+              background: isDark ? "#1e293b" : "#ffffff",
+              color: isDark ? "#ffffff" : "#334155",
+              showCancelButton: true,
+              confirmButtonColor: "#3b82f6",
+              cancelButtonColor: "#ef4444",
+              confirmButtonText: "Ya, Import",
+              cancelButtonText: "Batal",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                transactions = json;
+                saveData();
+                showAlert("success", "Berhasil", "Data berhasil dipulihkan!");
+              }
+              input.value = "";
+            });
+          } catch (err) {
+            showAlert("error", "Gagal", "File JSON rusak atau tidak valid.");
+            input.value = "";
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // --- GRID DISPLAY LOGIC ---
+      function renderDashboard() {
+        let totalBalance = 0;
+        let incomeThisMonth = 0;
+        let expenseThisMonth = 0;
+        let investmentTotal = 0;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        transactions.forEach((tx) => {
+          const txDate = new Date(tx.date);
+          const isSameMonth =
+            txDate.getMonth() === currentMonth &&
+            txDate.getFullYear() === currentYear;
+
+          if (tx.type === "income") {
+            totalBalance += tx.amount;
+            if (isSameMonth) incomeThisMonth += tx.amount;
+          } else {
+            totalBalance -= tx.amount;
+            if (isSameMonth) expenseThisMonth += tx.amount;
+            if (tx.category === "Investasi") {
+              investmentTotal += tx.amount;
+            }
+          }
+        });
+
+        document.getElementById("totalBalance").innerText = `Rp ${formatRupiah(
+          totalBalance
+        )}`;
+        document.getElementById("incomeMonth").innerText = `Rp ${formatRupiah(
+          incomeThisMonth
+        )}`;
+        document.getElementById("expenseMonth").innerText = `Rp ${formatRupiah(
+          expenseThisMonth
+        )}`;
+        document.getElementById("savingsTotal").innerText = `Rp ${formatRupiah(
+          investmentTotal
+        )}`;
+      }
+
+      // --- EXISTING LOGIC ---
       function switchTab(type) {
         const expenseBtn = document.getElementById("tabExpense");
         const incomeBtn = document.getElementById("tabIncome");
         const expenseForm = document.getElementById("formExpense");
         const incomeForm = document.getElementById("formIncome");
-
-        // Style Classes
         const activeClass = "shadow-sm bg-white dark:bg-slate-600";
         const inactiveClass =
           "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
@@ -367,9 +521,8 @@
         const name = document.getElementById("expName").value;
         const category = document.getElementById("expCategory").value;
         const amount = document.getElementById("expAmount").value;
-
         if (!name || !category || !amount) {
-          showAlert("warning", "Ups!", "Lengkapi data dulu ya.");
+          showAlert("warning", "Ups!", "Lengkapi data dulu.");
           return;
         }
 
@@ -381,22 +534,18 @@
           amount: parseInt(amount),
           date: new Date().toISOString(),
         };
-
         transactions.unshift(newTx);
         saveData();
-
         document.getElementById("expName").value = "";
         document.getElementById("expAmount").value = "";
-
-        showAlert("success", "Berhasil", "Pengeluaran dicatat.");
+        showAlert("success", "Tercatat", "Pengeluaran masuk.");
       }
 
       function submitIncome() {
         const source = document.getElementById("incSource").value;
         const amount = document.getElementById("incAmount").value;
-
         if (!source || !amount) {
-          showAlert("warning", "Ups!", "Lengkapi data dulu ya.");
+          showAlert("warning", "Ups!", "Lengkapi data dulu.");
           return;
         }
 
@@ -408,17 +557,13 @@
           amount: parseInt(amount),
           date: new Date().toISOString(),
         };
-
         transactions.unshift(newTx);
         saveData();
-
         document.getElementById("incSource").value = "";
         document.getElementById("incAmount").value = "";
-
-        showAlert("success", "Mantap!", "Pemasukan dicatat.");
+        showAlert("success", "Masuk!", "Pemasukan tercatat.");
       }
 
-      // Custom Alert Wrapper untuk Dark Mode
       function showAlert(icon, title, text) {
         const isDark = document.documentElement.classList.contains("dark");
         Swal.fire({
@@ -433,80 +578,17 @@
         });
       }
 
-      const formatRupiah = (angka) => {
-        return new Intl.NumberFormat("id-ID").format(angka);
-      };
-
-      function isDateInThisWeek(dateObj) {
-        const todayObj = new Date();
-        const todayDate = todayObj.getDate();
-        const todayDay = todayObj.getDay();
-        const firstDayOfWeek = new Date(
-          todayObj.setDate(todayDate - todayDay + (todayDay == 0 ? -6 : 1))
-        );
-        firstDayOfWeek.setHours(0, 0, 0, 0);
-        const checkDate = new Date(dateObj);
-        checkDate.setHours(0, 0, 0, 0);
-        return checkDate >= firstDayOfWeek;
-      }
-
-      function renderDashboard() {
-        let totalBalance = 0;
-        let expenseThisMonth = 0;
-        let expenseThisWeek = 0;
-
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        transactions.forEach((tx) => {
-          const txDate = new Date(tx.date);
-          if (tx.type === "income") {
-            totalBalance += tx.amount;
-          } else {
-            totalBalance -= tx.amount;
-            if (
-              txDate.getMonth() === currentMonth &&
-              txDate.getFullYear() === currentYear
-            ) {
-              expenseThisMonth += tx.amount;
-            }
-            if (
-              isDateInThisWeek(txDate) &&
-              txDate.getMonth() === currentMonth &&
-              txDate.getFullYear() === currentYear
-            ) {
-              expenseThisWeek += tx.amount;
-            }
-          }
-        });
-
-        document.getElementById("totalBalance").innerText = `Rp ${formatRupiah(
-          totalBalance
-        )}`;
-        document.getElementById("expenseMonth").innerText = `Rp ${formatRupiah(
-          expenseThisMonth
-        )}`;
-        document.getElementById("expenseWeek").innerText = `Rp ${formatRupiah(
-          expenseThisWeek
-        )}`;
-      }
+      const formatRupiah = (angka) =>
+        new Intl.NumberFormat("id-ID").format(angka);
 
       function renderList() {
         const listContainer = document.getElementById("transactionList");
         listContainer.innerHTML = "";
-
         if (transactions.length === 0) {
-          listContainer.innerHTML = `
-                    <div class="text-center py-10 opacity-50">
-                        <i class="fa-solid fa-receipt text-4xl mb-2 text-slate-300 dark:text-slate-600"></i>
-                        <p class="text-sm text-slate-400">Belum ada transaksi</p>
-                    </div>`;
+          listContainer.innerHTML = `<div class="text-center py-10 opacity-50"><i class="fa-solid fa-receipt text-4xl mb-2 text-slate-300 dark:text-slate-600"></i><p class="text-sm text-slate-400">Belum ada transaksi</p></div>`;
           return;
         }
-
         const recentTx = transactions.slice(0, 20);
-
         recentTx.forEach((tx) => {
           const dateObj = new Date(tx.date);
           const dateStr = dateObj.toLocaleDateString("id-ID", {
@@ -518,8 +600,6 @@
             minute: "2-digit",
           });
           const isExpense = tx.type === "expense";
-
-          // Styling per item
           const iconBg = isExpense
             ? "bg-red-100 text-red-500 dark:bg-red-500/20 dark:text-red-400"
             : "bg-green-100 text-green-500 dark:bg-green-500/20 dark:text-green-400";
@@ -532,32 +612,27 @@
             : "fa-arrow-trend-up";
 
           const html = `
-                <div class="bg-white dark:bg-darkcard p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center transition-colors duration-300">
-                    <div class="flex items-center gap-3">
-                        <div class="${iconBg} w-10 h-10 rounded-full flex items-center justify-center text-sm">
-                            <i class="fa-solid ${iconClass}"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${
-                              tx.title
-                            }</h4>
-                            <p class="text-xs text-slate-400 dark:text-slate-500">${
-                              tx.category
-                            } • ${dateStr}, ${timeStr}</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="font-bold ${amountColor} text-sm">${sign} Rp ${formatRupiah(
-            tx.amount
-          )}</span>
-                        <button onclick="deleteTx(${
-                          tx.id
-                        })" class="text-xs text-slate-300 hover:text-red-500 px-2 py-1">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+            <div class="bg-white dark:bg-darkcard p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex justify-between items-center transition-colors duration-300">
+                <div class="flex items-center gap-3">
+                    <div class="${iconBg} w-10 h-10 rounded-full flex items-center justify-center text-sm"><i class="fa-solid ${iconClass}"></i></div>
+                    <div>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${
+                          tx.title
+                        }</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">${
+                          tx.category
+                        } • ${dateStr}, ${timeStr}</p>
                     </div>
                 </div>
-                `;
+                <div class="flex flex-col items-end gap-1">
+                    <span class="font-bold ${amountColor} text-sm">${sign} Rp ${formatRupiah(
+            tx.amount
+          )}</span>
+                    <button onclick="deleteTx(${
+                      tx.id
+                    })" class="text-xs text-slate-300 hover:text-red-500 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>`;
           listContainer.innerHTML += html;
         });
       }
@@ -566,7 +641,7 @@
         const isDark = document.documentElement.classList.contains("dark");
         Swal.fire({
           title: "Hapus?",
-          text: "Saldo akan berubah.",
+          text: "Tidak bisa dikembalikan.",
           icon: "warning",
           background: isDark ? "#1e293b" : "#ffffff",
           color: isDark ? "#ffffff" : "#334155",
@@ -579,7 +654,7 @@
           if (result.isConfirmed) {
             transactions = transactions.filter((tx) => tx.id !== id);
             saveData();
-            showAlert("success", "Terhapus", "Data hilang selamanya.");
+            showAlert("success", "Terhapus", "");
           }
         });
       }
@@ -587,25 +662,25 @@
       function resetData() {
         const isDark = document.documentElement.classList.contains("dark");
         Swal.fire({
-          title: "Reset Total?",
-          text: "Semua data akan hilang!",
+          title: "BAHAYA: Reset Total?",
+          text: "Semua data akan hilang permanen! Pastikan sudah Export JSON dulu.",
           icon: "warning",
           background: isDark ? "#1e293b" : "#ffffff",
           color: isDark ? "#ffffff" : "#334155",
           showCancelButton: true,
           confirmButtonColor: "#ef4444",
-          confirmButtonText: "Reset",
+          cancelButtonColor: "#94a3b8",
+          confirmButtonText: "Ya, Hapus Semua",
           cancelButtonText: "Batal",
         }).then((result) => {
           if (result.isConfirmed) {
             transactions = [];
             saveData();
-            showAlert("success", "Bersih", "Silakan mulai dari nol.");
+            showAlert("success", "Bersih", "Data sudah di-reset.");
           }
         });
       }
 
-      // Init
       renderDashboard();
       renderList();
     </script>
